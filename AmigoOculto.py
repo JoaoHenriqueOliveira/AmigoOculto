@@ -2,16 +2,14 @@ import random
 import os
 from EmailSender import send_email
 
-my_list = []
-gifts = {}
 
-
-def get_emails(my_list, file_name='emails.txt'):
+def get_emails(file_name='emails.txt'):
+    my_list = []
     with open(file_name) as f:
         for line in f:
             chunks = line.split(',')
             my_list.append((' '.join(chunks[:-1]), chunks[-1][:-1]))
-    return
+    return my_list
 
 
 def get_gifts(gifts, file_name='gifts.txt'):
@@ -22,11 +20,6 @@ def get_gifts(gifts, file_name='gifts.txt'):
     return
 
 
-get_emails(my_list)
-
-get_gifts(gifts)
-
-
 def acceptable(participants, target):
     for i in range(len(participants)):
         if participants[i] == target[i]:
@@ -34,8 +27,10 @@ def acceptable(participants, target):
     return True
 
 
-def simulate(my_list=my_list):
-    shuffled_list = random.sample(my_list, len(my_list))
+def simulate(my_list):
+    shuffled_list = my_list
+    for i in range(7):
+        shuffled_list = random.sample(shuffled_list, len(shuffled_list))
     while not acceptable(my_list, shuffled_list):
         shuffled_list = random.sample(my_list, len(my_list))
     result = {my_list[i]: shuffled_list[i] for i in range(len(my_list))}
@@ -47,14 +42,16 @@ def broadcast(result):
     for src, tgt in result.items():
         name_dest, email_receiver = src[0], src[1]
         name_tgt = tgt[0]
-        text = f"Prezado(a) {name_dest},\nSeu amigo oculto é: {name_tgt}! Compre algo legal para ele(a) :)\nValor sugerido: 50 - 100 reais.\nNa lista de desejos o seu/sua amigo(a) secreto colocou: {gifts.get(name_tgt, 'N/A')}.\nFeliz Natal! 🌟 ⛄ 🎅 🎄\n\nAtt.\n"
+        text = f"Prezado(a) {name_dest},\nSeu amigo oculto é: {name_tgt}! Compre algo legal para ele(a) :)\nValor sugerido: 80 - 100 reais.\nFeliz Natal! 🌟 ⛄ 🎅 🎄\n\nAtt.\n"
+        # \nNa lista de desejos o seu/sua amigo(a) secreto colocou: {gifts.get(name_tgt, 'N/A')}.
         send_email(email_receiver=email_receiver,
                    email_password=password, body=text)
     return
 
 
 if __name__ == '__main__':
-    result = simulate()
+    my_list = get_emails()
+    result = simulate(my_list)
     flag = input('Send emails? [y/n]')
     if flag == 'y' or flag == 'Y':
         broadcast(result)
